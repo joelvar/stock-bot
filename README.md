@@ -19,49 +19,33 @@ After backtesting the moving average algorithm(starting capital being $1000) wit
 
 Amazon.com, Inc. : 
 
-Buy and Hold portfolio value: $8040
+Buy and Hold Strategy Returns: $7842
 
-Returns: $7842
-
-Algorithm portfolio value: $40286
-
-Returns: $40088
+Moving Average Strategy Returns: $40088
 
 ![AMZN](https://github.com/joelvar/stock-bot/blob/master/Images/amzn.PNG?raw=true)
 
 NVIDIA Corporation : 
 
-Buy and Hold portfolio value: $10494
+Buy and Hold Returns: $10166
 
-Returns: $10166
-
-Algorithm portfolio value: $37356
-
-Returns: $37028
+Moving Average Strategy Returns: $37028
 
 ![NVDA](https://github.com/joelvar/stock-bot/blob/master/Images/nvda.PNG?raw=true)
 
 Nike Inc : 
 
-Buy and Hold portfolio value: $6693
+Buy and Hold Returns: $6099
 
-Returns: $6099
-
-Algorithm portfolio value: $14286
-
-Returns: $13693
+Moving Average Strategy Returns: $13693
 
 ![NKE](https://github.com/joelvar/stock-bot/blob/master/Images/nke.PNG?raw=true)
 
 Penumbra Inc:
 
-Buy and Hold portfolio value: $9341
+Buy and Hold Returns: $7276
 
-Returns: $7276
-
-Algorithm portfolio value: $13353
-
-Returns: $11288
+Moving Average Strategy Returns: $11288
 
 ![PEN](https://github.com/joelvar/stock-bot/blob/master/Images/pen.PNG?raw=true)
 
