@@ -1,132 +1,101 @@
 import yfinance as yf
-import pandas as _pd
-import numpy as np
-import enum 
 import matplotlib.pyplot as plt
+import math
+from datetime import date
+from termcolor import colored
+from dateutil.relativedelta import relativedelta
 
-"""
-        Author: Ryan Cullen
-"""
-
-class Decisions(enum.Enum):
-    sell = -1
-    hold = 0
-    buy = 1
-    
 
 class Portfolio:
    
     """ Stock portfolio 
     
     Holds information about current buying power, equity, and overall value.
-
     Attributes:
         capital: starting cash
         shares: starting number of shares
         portfolio value: the overall value of the stock portfolio in $USD if the owner were to liquidate all assets
-
     Funtions:
         Decide(): This is where the logic of when to buy, sell, or hold should go
         Order(): Used to execute a buy or sell order
         
     """
        
-    def __init__(self, capital, shares): 
-        """ Inits a Portfolio object """
+    def __init__(self, capital, shares, initial_price): 
 
         self.capital = capital
         self.shares = shares
-        self.portfolio_value = self.capital + self.shares*price
+        self.initial_price = initial_price
+        self.portfolio_value = self.capital + self.shares*self.initial_price
+        self.run = 0
+        self.Orders = []
 
 
-    def Decide(self, f1, f2, f3, f4):   
-        """ This is where the script decides to Buy, Sell, or Hold; Desgin your algorithm logic here. 
-        
-            Arguments (keep these or design your own):
-                f1, f2, f3, f4: moving averages over different time periods
-        """
+    def Decide(self, f1, f2, f3, window):   
 
-        
-        # here is the skeleton of an algorithm; fill in the logic for calculating the probability of profit and expected return
+        # concavity checks
+        if(f2.concavity < -0.1):
+            if price < f1.averages[i]:
+                if price < f3.averages[i]:
+                    self.run = 0
+                    return 0
+        if(f1.concavity < -0.2):
+            if price > f3.averages[i]:
+                self.run = 0
+                return -1
 
-        prob_profit = 0.1
-        expected_return = 1.1
-        modifier = 0.5
-        
-        
-       #                ~~~~   fill in code here   ~~~~
-
-
-        position = self.OptimalPosition(expected_return, prob_profit, modifier)
-        shares = abs(int(position/price))
-        
-        if position > 0:
-            self.Order(Decisions.buy, shares)
-        else:
-            self.Order(Decisions.sell, shares)
+        if(f1.slope > -0.1):
+            self.run += 1
+        return self.run
 
 
 
-    def Order(self, decision, n = -1):
-        """ Executes a buy/sell order of n shares, or a buy/sell max order if no input for n.
+    def Order(self, value, n, date):
 
-            Arguments:
-                decision: an element from the Decisions class
-                n: number of shares to order
-        
-        """
-
-        counter = 0
-
-        # buy n shares
-        if decision == Decisions.buy:
+        # buy n
+        if value == 0:
             counter = 0  
             while self.capital >= price:
                 self.capital -= price
-                self.shares += 1
                 counter += 1
                 if counter == n:
                     break
-            
-        # sell n shares
-        elif decision == Decisions.sell:
+            self.shares += counter
+            plt.plot([i], [price], marker='o', markersize=4, color="limegreen")
+
+        # sell n
+        elif value == -1:
+            if self.shares > n:
+                self.capital += n*price
+                self.shares -= n
+            plt.plot([i], [price], marker='o', markersize=4, color="red")
+
+        # buy all
+        if value == 3:
             counter = 0  
-            while self.shares > 0:
-                self.capital += price
-                self.shares -= 1
+            while self.capital >= price:
+                self.capital -= price
                 counter += 1
-                if counter == n:
-                    break
+            self.shares += counter
+            plt.plot([i], [price], marker='o', markersize=4, color="limegreen")
 
-        # plot a dot for buy or sell points
-        if counter > 0:
-            if decision.value > 0:
-                plt.plot([i], [price], marker='o', markersize=4, color="limegreen")
-            elif decision.value < 0:
-                plt.plot([i], [price], marker='o', markersize=4, color="red")
+        # sell all
+        elif value == -2:
+            self.capital += self.shares*price
+            self.shares = 0
 
+            plt.plot([i], [price], marker='o', markersize=4, color="red")
+
+        self.Orders.insert(i, dict(Type = value < 0 and "Sell" or (value == 0 or value == 3) and "Buy" or "Hold" , Day = date ))
+        
     
     
-    def OptimalPosition(self, expected_return, prob_win, modifier):
-        """ Uses the Kelly Criterion to calculate the optimal position size for a given play.
-
-            Arguments:
-                expected return: a float representing your percent gain (eg. 1.1 if you think you will gain 10%)
-                prob_win: the fractional probability that we will get our expected return
-                modifier: a value between 0 and 1; higher values make for a more aggressive bet
-        """
-        prob_lose = 1 - prob_win
-        fraction = ((expected_return * prob_win) - prob_lose) / expected_return
-        optimal_position = (self.capital * fraction) * modifier
-
-        return optimal_position
-
     
 
     def PortfolioValue(self):
-        """ Returns the current total monetary value of the portfolio """
         self.portfolio_value = self.capital + (self.shares*price)
         return self.portfolio_value
+
 
 
     
@@ -136,7 +105,6 @@ class MovingAverage:
     """ Moving Average 
     
     An object used to represent a moving average function.
-
     Attributes:
         averages: the list of average values at each point
         percent_difference: the percent difference between the price and the current point
@@ -151,11 +119,9 @@ class MovingAverage:
         above: a bool to tell whether the proce is above or below the current point
         flipped: a bool that is True for one day after the price flips over the function
         edge: variable to account for the beginning of the dataset
-
     """
 
     def __init__(self):
-        """ Inits a MovingAverage object """  
         
         self.averages = []
         self.percent_difference = 0
@@ -174,12 +140,11 @@ class MovingAverage:
 
     def CalculateAverage(self, value_list, window):
 
-        """ Calculates the value for the moving average over the last (window) days.
+        """ Calculates the value for the moving average over the last (window) days
         
-            Arguments:
+            Attributes:
                 value_list: the list of values of which the average will be calculated
                 window: the interval over which to calculate the average value
-
          """
         
         # account for the beginning of the dataset
@@ -200,10 +165,10 @@ class MovingAverage:
 
 
     def Update(self, window):
-        """ Updates the indicators used for building the algorithm.
+        """ Updates the indicators used for building the algorithm
         
-            Arguments:
-                window: the interval over which to calculate the indicators
+            Attributes:
+                window: the interval over which to calculate the indicators.
         
         """
         # percent deviation from the mean
@@ -250,25 +215,15 @@ class MovingAverage:
                 self.flipped = True
             else: self.flipped = False
 
+def run_algo(ticker, starting_capital, starting_shares):
 
-
-
-"""
-Main Loop
-
-"""
-
-while True:
-
-    # input a ticker to track
-    ticker = input("Enter ticker: ")
-    if ticker == 'exit':
-        break
-
-    # get ticker information and price history
     ticker_info = yf.Ticker(ticker)
-    price_history = ticker_info.history(start="2015-01-01",  end="2020-12-20")
+    today = date.today()
+    s = date.today() - relativedelta(years = 15)
 
+    #print(str(s), str(today))
+
+    price_history = ticker_info.history(start=str(s),  end=str(today))
     # assign lists for the open/close prices, the moving-average values, 
     # and the daily average prices.
     opens = price_history['Open']
@@ -277,81 +232,103 @@ while True:
 
     # calculates the inital price of the stock, and 
     # the number of days we are looking back in history
+    global price
     price = closes[0]
     days = opens.size
 
     # initialize the portfolio and moving average objects
-    starting_capital = 0
-    starting_shares = 100
     entry_price = starting_shares * price
-    portfolio = Portfolio(starting_capital, starting_shares)
+    portfolio = Portfolio(starting_capital, starting_shares, price)
 
     # objects to track moving averages
     f1 = MovingAverage()
     f2 = MovingAverage()
     f3 = MovingAverage()
-    f4 = MovingAverage()
 
-    max_slope = 0
 
     # iterate over the history of the stock
-    for i in range(days):
-        
+    for j in range(days):
+        global i
+        i = j
         # create a list of the closing prices
-        price = closes[i]
+        price = closes[j]
+        pricedate = price_history.iloc[j].name
         prices.append(price)
+  
+        # calculating current moving averages
+        window = 50
+        f1.averages.append(f1.CalculateAverage(prices, window))
+        f2.averages.append(f2.CalculateAverage(f1.averages, window))
+        f3.averages.append(f3.CalculateAverage(f2.averages, window))
         
-        f1_window = 10
-        f2_window = 50
-        f3_window = 100
-        f4_window = 200
-        
-        # ask for time periods to calculate moving averages (optional)
-        # f1_window = Input("Calculate the __ day moving average: ")
-        # f2_window = Input("Calculate the __ day moving average: ")
-        # f3_window = Input("Calculate the __ day moving average: ")              
-        # f4_window = Input("Calculate the __ day moving average: ")
-        
-        # calculate the moving averages
-        f1.averages.append(f1.CalculateAverage(prices, f1_window))
-        f2.averages.append(f2.CalculateAverage(prices, f2_window))
-        f3.averages.append(f3.CalculateAverage(prices, f3_window))
-        f4.averages.append(f4.CalculateAverage(prices, f4_window))
-        
-        # update the functions
-        f1.Update(f1_window)
-        f2.Update(f2_window)
-        f3.Update(f3_window)
-        f4.Update(f4_window)
+        # updating functions
+        small_window = int(window/2)
+        f1.Update(small_window)
+        f2.Update(small_window)
+        f3.Update(small_window)
 
-        # decide if we buy, sell, or hold
-        portfolio.Decide(f1, f2, f3, f4)
+        # deciding if we buy, sell, or hold
+        value = portfolio.Decide(f1, f2, f3, window)
+        portfolio.Order(value, 10, pricedate)
     
     
-    # did we win?
     control_value = starting_capital + (prices[days - 1] * starting_shares)
     algo_value = portfolio.PortfolioValue()
 
-    print(" ")
-    print("Capital: {}".format(portfolio.capital))
-    print("Shares: {}".format(portfolio.shares))
-    print("Buy and Hold portfolio value: {}".format(control_value))
-    print("Returns: {}".format(control_value - entry_price))
-    print("Algorithm portfolio value:  {}".format(algo_value))
-    print("Returns: {}".format(algo_value - entry_price))
-    print(" ")
+    return portfolio, entry_price, control_value, algo_value, prices, days
 
-    # plot the price history and moving average history
-    plot1 = plt.figure(1)
-    x = list(range(0, days))
-    plt.plot(x, prices)
-    plt.title(ticker)
-    plt.xlabel("Days")
-    plt.ylabel("Price")
-    
-    plt.plot(x, f1.averages)
-    plt.plot(x, f2.averages)
-    plt.plot(x, f3.averages)
-    plt.plot(x, f4.averages)
 
-    plt.show()
+"""
+Main Loop
+"""
+
+"""
+Buy/Sell Decisions for today
+"""
+watchlist = ['AMZN','BABA','NKE', 'DKNG', 'GBT', 'TWTR', 'IBM', 'PEN', 'IRBT', 'NVDA', 'MSFT', 'MYOV', 'GOOG', 'SPCE', 'CVNA', 'MRNA', 'ARKG', 'NIO', 'AMD' , 'WMT', 'AAPL', 'SBUX']
+
+"""
+Main Loop
+"""
+
+while True:
+    starting_capital = 1000
+    starting_shares = 50
+    # input a stock ticker to track
+    ticker = input("Enter ticker: ")
+    if ticker == 'exit':
+        break
+    elif ticker == 'today':
+        for ticker in watchlist:
+            portfolio, entry_price, control_value, algo_value, prices, days = run_algo(ticker, starting_capital, starting_shares)
+            order_today = portfolio.Orders[days-1]
+            highlight_color = order_today['Type'] == "Buy" and 'green' or order_today['Type'] == "Sell" and 'red' or 'white'
+            performance = math.floor( (algo_value-entry_price)/entry_price*100 )
+            print(ticker,colored( order_today, highlight_color), "Current performance: "+ (algo_value >= entry_price and "+%" or algo_value < entry_price and "-%")+ str(performance))
+            plt.close()
+           
+           
+    else:
+        portfolio, entry_price, control_value, algo_value, prices, days = run_algo(ticker, starting_capital, starting_shares)
+        print(" ")
+        print("Capital: $" + str( math.floor(portfolio.capital)))
+        print("Shares: " + str(portfolio.shares))
+        print("Starting portfolio value: $" + str(math.floor(entry_price)))
+        print("Buy and Hold portfolio value: $" + str(math.floor(control_value)))
+        print("Returns: $" + str(math.floor(control_value - entry_price)))
+        print("Algorithm portfolio value: $" + str(math.floor(algo_value)))
+        print("Returns: $" + str(math.floor(algo_value - entry_price)))
+        print(" ")
+        #print(portfolio.Orders)
+        #legends
+        plt.plot([0], [prices[0]], marker='o', markersize=4, color="red", label="Sell Point")
+        plt.plot([0], [prices[0]], marker='o', markersize=4, color="limegreen", label="Buy Point")
+
+        # plot the price history and moving average history
+        x = list(range(0, days))
+        plt.plot(x, prices)
+        plt.title(ticker)
+        plt.xlabel("Days")
+        plt.ylabel("Price")
+        plt.legend()
+        plt.show()
