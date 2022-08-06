@@ -15,7 +15,7 @@ pip install yfinance
 You will be asked to enter a stock ticker for the stock that you want to test the algorithm on.
 
 ## Results
-After backtesting the moving average algorithm with a buy and hold strategy of the past 15 years, I've noticed that the moving average algorithm has considerable profits for most stocks with starting capital being $1000. Some examples are as follows:
+After backtesting the moving average algorithm(starting capital being $1000) with a buy and hold strategy of the past 15 years, I've noticed that the moving average algorithm has considerable profits for most stocks. Some examples are as follows:
 
 Amazon.com, Inc. : 
 
