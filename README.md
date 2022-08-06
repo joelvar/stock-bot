@@ -1,4 +1,3 @@
-Author:  Ryan Cullen
 # StockBot
 
 StockBot is a Python application for designing and testing your own daily stock trading algorithms.
@@ -13,27 +12,42 @@ pip install yfinance
 ```
 
 ## Usage
-You will be asked to enter a ticker for the stock that you want to test the algorithm on.
+You will be asked to enter a stock ticker for the stock that you want to test the algorithm on.
 
-If you want to modify the algorithm and design your own, you only need to change the Decide() method. That method takes three functions, and you can decide what those are or design your own inputs. My implementation uses moving averages and their derivatives/concavity (the class for which is set up for you to use in your own algorithm).
+## Results
+After backtesting the moving average algorithm with a buy and hold strategy of the past 15 years, I've noticed that the moving average algorithm has considerable profits for most stocks with starting capital being $1000. Some examples are as follows:
 
-## Example Output
-Here are a couple images depicting the output from an algorithm I developed. 
+Amazon.com, Inc. : 
 
-![PEN](https://github.com/ryantcullen/stock-bot/blob/master/Example%20Pictures/B4myQ0t.png?raw=true)
+Buy and Hold portfolio value: $8040
+Returns: $7842
 
-![BABA](https://github.com/ryantcullen/stock-bot/blob/master/Example%20Pictures/TwOShiK.png?raw=true)
+Algorithm portfolio value: $40286
+Returns: $40088
 
-![IBM](https://github.com/ryantcullen/stock-bot/blob/master/Example%20Pictures/lhWY5yX.png?raw=true)
+NVIDIA Corporation : 
 
+Buy and Hold portfolio value: $10494
+Returns: $10166
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Algorithm portfolio value: $37356
+Returns: $37028
 
-The goal for this script is of course for it to be as robust and generalized as possible in terms of the data available for the user to use to design an algorithm. Add features according to whatever that means to you and submit a pull request to the feature-test branch. If if adds value to the project it will be accepted and merged. 
+Nike Inc : 
 
-Please make sure to update tests as appropriate.
+Buy and Hold portfolio value: $6693
+Returns: $6099
 
-Thanks!  :)
+Algorithm portfolio value: $14286
+Returns: $13693
+
+Penumbra Inc:
+
+Buy and Hold portfolio value: $9341
+Returns: $7276
+
+Algorithm portfolio value: $13353
+Returns: $11288
+
 
 
